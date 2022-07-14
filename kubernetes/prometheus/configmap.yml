@@ -1,0 +1,40 @@
+apiVersion: v1
+data:
+  prometheus.yml:
+    "# my global config\r\n\r\nglobal:\r\n  scrape_interval:     1s
+    # Set the scrape interval to every 15 seconds. Default is every 1 minute.\r\n
+    \ evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every
+    1 minute.\r\n  # scrape_timeout is set to the global default (10s).\r\n\r\n# Alertmanager
+    configuration\r\nalerting:\r\n  alertmanagers:\r\n  - static_configs:\r\n    -
+    targets:\r\n      - localhost:9093\r\n\r\n# Load rules once and periodically evaluate
+    them according to the global 'evaluation_interval'.\r\n\r\nrule_files:\r\n  -
+    rules.yml\r\n# A scrape configuration containing exactly one endpoint to scrape:\r\n\r\n#
+    Here it's Prometheus itself.\r\n\r\nscrape_configs:\r\n  # The job name is added
+    as a label `job=<job_name>` to any timeseries scraped from this config.\r\n  -
+    job_name: 'prometheus'\r\n    # metrics_path defaults to '/metrics'\r\n    # scheme
+    defaults to 'http'.  aq\r\n    static_configs:\r\n    - targets: ['localhost:9090']\r\n
+    \ - job_name: 'Hello-app'\r\n    static_configs:\r\n    - targets: ['127.0.0.1:61810']"
+
+  rules.yml: |-
+        groups:
+          - name: Instances
+            rules:
+            - alert: InstanceDown
+              # Condition for alerting
+              expr: up == 0
+              for: 1m
+              # Annotation - additional informational labels to store more information
+              annotations:
+                title: 'Instance {{ $labels.instance }} down'
+                description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+              # Labels - additional labels to be attached to the alert
+              labels:
+                  severity: 'critical'
+                  
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-07-08T20:40:12Z"
+  name: prometheus
+  namespace: default
+  resourceVersion: "11912"
+  uid: 5eb90c35-6f72-4164-9722-98e05f8627f1
